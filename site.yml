@@ -147,7 +147,7 @@
 
     - name: Install custom DotCI plugin
       command:
-        java -jar jenkins-cli.jar -s http://localhost:8080 install-plugin https://github.com/glogiotatidis/DotCi/releases/download/2.5.2-custom/DotCi.hpi
+        java -jar jenkins-cli.jar -s http://localhost:8080 install-plugin https://github.com/glogiotatidis/DotCi/releases/download/2.5.3-custom/DotCi.hpi
       notify: Restart Jenkins
 
     - name: Install EnvInject plugin
