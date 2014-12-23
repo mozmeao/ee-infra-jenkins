@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.plugins.ircbot.IrcPublisher_-DescriptorImpl plugin="ircbot@2.25">
+  <enabled>true</enabled>
+  <hostname>{{ irc_server }}</hostname>
+  <port>{{ irc_port }}</port>
+  <ssl>{{ irc_ssl }}</ssl>
+  <disallowPrivateChat>false</disallowPrivateChat>
+  <login>PircBotx</login>
+  <sslTrustAllCertificates>false</sslTrustAllCertificates>
+  <password></password>
+  <nick>{{ irc_nick }}</nick>
+  <nickServPassword>{{ irc_nickserv_password }}</nickServPassword>
+  <socksHost></socksHost>
+  <socksPort>1080</socksPort>
+  <scrambledPasswords>false</scrambledPasswords>
+  <defaultTargets>
+   {% for irc_channel in irc_channels %}
+      <hudson.plugins.im.GroupChatIMMessageTarget plugin="instant-messaging@1.30">
+        <name>#{{ irc_channel }}</name>
+        <notificationOnly>false</notificationOnly>
+      </hudson.plugins.im.GroupChatIMMessageTarget>
+    {% endfor %}
+  </defaultTargets>
+  <commandPrefix>!jenkins</commandPrefix>
+  <hudsonLogin></hudsonLogin>
+  <useNotice>false</useNotice>
+  <charset>UTF-8</charset>
+  <useColors>true</useColors>
+</hudson.plugins.ircbot.IrcPublisher_-DescriptorImpl>

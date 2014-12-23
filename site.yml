@@ -3,6 +3,22 @@
   remote_user: "{{ remote_user }}"
   sudo: True
   tasks:
+    - name: Install common Ops packages
+      apt: name={{ item }} state=present update_cache=yes cache_valid_time=600
+      with_items:
+        - htop
+        - python-virtualenv
+        - python-pip
+
+    - name: Install mailutils for email sending
+      apt: name=mailutils state=present update_cache=yes cache_valid_time=600
+
+    - name: Set Postfix to listen on 127.0.0.1 only
+      command:
+        postconf -e 'inet_interfaces = 127.0.0.1'
+      notify:
+        - Restart Postfix
+
     - name: Install nginx
       apt: name=nginx-light state=present update_cache=yes cache_valid_time=600
 
@@ -52,14 +68,6 @@
     - name: Install Docker
       apt: name=lxc-docker state=present update_cache=yes cache_valid_time=600
 
-    - name: Install mongodb
-      apt: name=mongodb state=present update_cache=yes cache_valid_time=600
-      notify: Restart mongodb
-
-    - name: Set smallfiles configuration
-      lineinfile: dest=/etc/mongodb.conf state=present line="smallfiles = true"
-      notify: Restart mongodb
-
     - name: Add Jenkins-CI Repository Key
       apt_key: url=http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key state=present
 
@@ -88,22 +96,25 @@
 
     - name: Set Jenkins-CI configuration
       template:
-        src: templates/jenkins-cfg.j2
-        dest: /var/lib/jenkins/config.xml
+        src: templates/jenkins/{{ item }}.j2
+        dest: /var/lib/jenkins/{{ item }}
         group: jenkins
         owner: jenkins
         mode: 0640
         backup: yes
+      with_items:
+        - config.xml
+        - jenkins.model.JenkinsLocationConfiguration.xml
+        - org.jenkinsci.main.modules.sshd.SSHD.xml
+        - hudson.tasks.Mailer.xml
+        - hudson.plugins.ircbot.IrcPublisher.xml
+        - hudson.plugins.bugzilla.BugzillaProjectProperty.xml
+        - com.cloudbees.jenkins.GitHubPushTrigger.xml
+        - org.jenkinsci.plugins.ghprb.GhprbTrigger.xml
       notify: Restart Jenkins
-
-    - name: Set DotCI configuration
-      template:
-        src: templates/dotci-cfg.j2
-        dest: /var/lib/jenkins/com.groupon.jenkins.SetupConfig.xml
-        group: jenkins
-        owner: jenkins
-        mode: 0640
-        backup: yes
+      tags:
+        - jenkins-conf
+        - install-plugins
 
     # Unset security, so we can install plugins and other stuff
     # without too much trouble.
@@ -112,10 +123,14 @@
         dest=/var/lib/jenkins/config.xml
         regexp='<useSecurity>true</useSecurity>'
         line='<useSecurity>false</useSecurity>'
-      notify: Unset maintenance Jenkins-CI configuration 
+      notify: Unset maintenance Jenkins-CI configuration
+      tags:
+        - install-plugins
 
     - name: (Re)-Start Jenkins-CI
       service: name=jenkins state=restarted
+      tags:
+        - install-plugins
 
     - name: Wait until Jenkins web API is available
       shell: curl --head --silent http://localhost:8080/cli/
@@ -123,12 +138,16 @@
       until: result.stdout.find("200 OK") != -1
       retries: 12
       delay: 5
+      tags:
+        - install-plugins
 
     - name: Get Jenkins-CLI
       get_url:
         url=http://localhost:8080/jnlpJars/jenkins-cli.jar
         dest=/home/ubuntu/jenkins-cli.jar
         mode=0440
+      tags:
+        - install-plugins
 
     - name: Add first Jenkins-CI user
       shell:
@@ -137,32 +156,31 @@
     - name: Force Jenkins-CI to update plugin list
       shell:
         "curl  -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -X POST -H 'Accept: application/json' -d @- http://localhost:8080/updateCenter/byId/default/postBack"
+      tags:
+        - install-plugins
 
-    # This step is needed to bringin DotCI dependencies. We will
-    # replace DotCI with our custom build.
-    - name: Install DotCI plugin
+    - name: Install Jenkins Plugins
       command:
-        java -jar jenkins-cli.jar -s http://localhost:8080 install-plugin dotci
+        java -jar jenkins-cli.jar -s http://localhost:8080 install-plugin {{ item }}
+      with_items:
+        - envinject
+        - conditional-buildstep
+        - embeddable-build-status
+        - git
+        - github
+        - bugzilla
+        - ircbot
+        - ghprb
+        - postbuild-task
+        - periodic-reincarnation
       notify: Restart Jenkins
-
-    - name: Install custom DotCI plugin
-      command:
-        java -jar jenkins-cli.jar -s http://localhost:8080 install-plugin https://github.com/glogiotatidis/DotCi/releases/download/2.5.3-custom/DotCi.hpi
-      notify: Restart Jenkins
-
-    - name: Install EnvInject plugin
-      command:
-        java -jar jenkins-cli.jar -s http://localhost:8080 install-plugin envinject
-      notify: Restart Jenkins
+      tags:
+        - install-plugins
 
     - name: Start nginx
       service: name=nginx state=started
 
   handlers:
-    - name: Restart mongodb
-      service: name=mongodb state=restarted
-      sudo_user: root
-
     - name: Reload Nginx
       service: name=nginx state=reloaded
       sudo_user: root
@@ -177,6 +195,9 @@
       service: name=jenkins state=restarted
       sudo_user: root
 
+    - name: Restart Postfix
+      service: name=postfix state=restarted
+      sudo_user: root
+
   vars_files:
-    - variables.yml
     - local_variables.yml

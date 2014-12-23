@@ -1,11 +1,11 @@
-# Jenkins-CI with DotCI
+# Jenkins-CI
 
 This is a [ansible](http://ansible.com/) playbook to install and
-configure [Jenkins-CI](http://jenkins-ci.org/) and
-[DotCI](https://github.com/groupon/DotCi) on Ubuntu 14.04.
+configure [Jenkins-CI](http://jenkins-ci.org/) with a bunch of useful
+plugins on Ubuntu 14.04
 
-The playbook will install Nginx, configure SSL, mongodb (required by
-DotCI), docker and DotCI.
+The playbook will install Nginx, configure SSL, docker, a local only
+SMTP server and Jenkins plugins.
 
 
 ## Build your own
@@ -15,32 +15,21 @@ DotCI), docker and DotCI.
    can use a self-signed certificate. Search 'generate self signed SSL
    certificate` on instructions on how to create one.
 
-2. Create a
-   [GitHub Application](https://github.com/settings/applications/new)
-   for your JenkinsCI. This is needed by DotCI. Set `Authorization
-   callback URL` to `https://<ip>/dotci/finishLogin`.
+2. Copy `local_variables-dist.yml` to `local_variables.yml` and adjust
+   to your preferences.
 
-3. Populate `github_client_id` and `github_secret` in
-`local_variables.yml` using the values supplied by GitHub in
-step 2. You also want to create a first Jenkins user. Populate
-`jenkins_user` and `jenkins_password` variables in
-`local_variables.yml`.
-
-
-4. Add your host in `hosts`. Example `hosts`
+3. Add your host in `hosts`. Example `hosts`
 
 ```
 [jenkins]
 ci-1 ansible_ssh_host=127.0.0.1
 ```
 
-5. Run the playbook:
+4. Run the playbook:
 
     `ansible-playbook -i hosts site.yml`
 
-6. Login in your new Jenkins install and configure DotCI jobs. Note
-   that DotCI jobs must be generated using the "New DotCI Job" link
-   and not the "New Job" link. Read DotCI documentation for more.
+5. Yay!
 
 
 ## GitHub hooks and Self-Signed Certificates
@@ -48,4 +37,27 @@ ci-1 ansible_ssh_host=127.0.0.1
 If you used a self-signed certificate in step 1, the GitHub WebHooks
 set up by DotCI will not work. You need to edit the hook and disable
 SSL verification.
+
+### GitHub Webhooks
+
+This playbook installs two GitHub plugins,
+[GitHub](https://wiki.jenkins-ci.org/display/JENKINS/Github+Plugin)
+and
+[GitHub Pull Request Builder](https://wiki.jenkins-ci.org/display/JENKINS/Github+pull+request+builder+plugin). Read
+the instructions on how to enable these. In some cases the plugins
+fail to install their hooks but you can still add them manually.
+
+For GitHub
+
+Payload URL: https://<your_server>/github-webhook/
+Content Type: x-www-form-urlencoded
+Payload: Just the push event
+
+
+For GitHub Pull Request Builder
+
+Payload URL: https://<your_server>/ghprbhook/
+Content Type: x-www-form-urlencoded
+Payload: Pull Request and Issue Comment
+
 
