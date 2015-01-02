@@ -173,6 +173,7 @@
         - ghprb
         - postbuild-task
         - periodic-reincarnation
+        - rebuild 
       notify: Restart Jenkins
       tags:
         - install-plugins
