@@ -25,6 +25,8 @@
     # We are going into maintenance mode, stop nginx.
     - name: Stop nginx
       service: name=nginx state=stopped
+      tags:
+        - install-plugins
 
     - name: Copy SSL key
       copy:
@@ -180,6 +182,8 @@
 
     - name: Start nginx
       service: name=nginx state=started
+      tags:
+        - install-plugins
 
   handlers:
     - name: Reload Nginx
