@@ -118,6 +118,20 @@
         - jenkins-conf
         - install-plugins
 
+    - name: Copy Jenkins-CI SSH key
+      copy:
+        src=ssh/{{ item }}
+        dest=/var/lib/jenkins/.ssh/{{ item }}
+        force=yes
+        mode=0600
+        owner=jenkins
+        group=jenkins
+      with_items:
+        - id_rsa
+        - id_rsa.pub
+      tags:
+        - jenkins-conf
+
     # Unset security, so we can install plugins and other stuff
     # without too much trouble.
     - name: Set maintenance Jenkins-CI configuration
@@ -175,7 +189,7 @@
         - ghprb
         - postbuild-task
         - periodic-reincarnation
-        - rebuild 
+        - rebuild
       notify: Restart Jenkins
       tags:
         - install-plugins
