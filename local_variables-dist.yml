@@ -24,3 +24,6 @@ irc_channels:
 # SMTP
 jenkins_email_address:
 jenkins_smtp_host: localhost
+
+# NewRelic
+newrelic_license_key:

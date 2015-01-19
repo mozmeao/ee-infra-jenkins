@@ -15,6 +15,36 @@
         - python-virtualenv
         - python-pip
 
+    - name: Add NewRelic repository key
+      apt_key: url=https://download.newrelic.com/548C16BF.gpg state=present
+      tags:
+        - newrelic
+
+    - name: Add NewRelic repository
+      apt_repository:
+        repo='deb http://apt.newrelic.com/debian/ newrelic non-free'
+        state=present
+        update_cache=yes
+      tags:
+        - newrelic
+
+    - name: Install NewRelic
+      apt: name=newrelic-sysmond state=present update_cache=yes cache_valid_time=300
+      tags:
+        - newrelic
+
+    - name: Copy NewRelic Configuration
+      template:
+        src: templates/nrsysmond.cfg.j2
+        dest: /etc/newrelic/nrsysmond.cfg
+        group: newrelic
+        owner: root
+        mode: 0640
+      notify:
+        - Restart newrelic
+      tags:
+        - newrelic
+
     - name: Install mailutils for email sending
       apt: name=mailutils state=present update_cache=yes cache_valid_time=600
 
@@ -137,6 +167,18 @@
       tags:
         - jenkins-conf
 
+
+    - name: Set Jenkins-CI gitconfig
+      template:
+        src: templates/gitconfig
+        dest: /var/lib/jenkins/.gitconfig
+        group: jenkins
+        owner: jenkins
+        mode: 0640
+        backup: yes
+      tags:
+        - jenkins-conf
+
     # Unset security, so we can install plugins and other stuff
     # without too much trouble.
     - name: Set maintenance Jenkins-CI configuration
@@ -195,6 +237,7 @@
         - postbuild-task
         - periodic-reincarnation
         - rebuild
+        - parameterized-trigger
       notify: Restart Jenkins
       tags:
         - install-plugins
@@ -221,6 +264,10 @@
 
     - name: Restart Postfix
       service: name=postfix state=restarted
+      sudo_user: root
+
+    - name: Restart newrelic
+      service: name=newrelic-sysmond state=restarted
       sudo_user: root
 
   vars_files:
