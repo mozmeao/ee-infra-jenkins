@@ -3,6 +3,11 @@
   remote_user: "{{ remote_user }}"
   sudo: True
   tasks:
+    - name: Set hostname
+      hostname: name={{ hostname }}
+      tags:
+        - newrelic
+
     - name: Install common Ops packages
       apt: name={{ item }} state=present update_cache=yes cache_valid_time=600
       with_items:

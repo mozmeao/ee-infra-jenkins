@@ -1,5 +1,6 @@
 # SSH as user
 remote_user: ubuntu
+hostname:
 
 jenkins_url:
 
