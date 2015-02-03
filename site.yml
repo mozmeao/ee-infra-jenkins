@@ -14,6 +14,7 @@
         - htop
         - python-virtualenv
         - python-pip
+        - sharutils
 
     - name: Add NewRelic repository key
       apt_key: url=https://download.newrelic.com/548C16BF.gpg state=present
