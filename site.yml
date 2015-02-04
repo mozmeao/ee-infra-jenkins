@@ -15,6 +15,7 @@
         - python-virtualenv
         - python-pip
         - sharutils
+        - linux-image-3.16  # Linux 3.16 behaves much better than the default older version.
 
     - name: Add NewRelic repository key
       apt_key: url=https://download.newrelic.com/548C16BF.gpg state=present
