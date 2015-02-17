@@ -7,3 +7,4 @@ docker rm `docker ps -a -q`
 service docker stop
 rm -rf /var/lib/docker/devicemapper
 service docker start
+service jenkins restart
