@@ -6,7 +6,7 @@ set -xe
 # Delete all containers
 docker rm $(docker ps -a -q)
 # Delete all images
-docker rmi $(docker images -q)
+docker rmi -f $(docker images -q)
 
 service docker stop
 service docker start
