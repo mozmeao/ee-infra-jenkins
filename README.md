@@ -1,12 +1,15 @@
 # Jenkins-CI
 
 This is a [ansible](http://ansible.com/) playbook to install and
-configure [Jenkins-CI](http://jenkins-ci.org/) with a bunch of useful
-plugins on Ubuntu 14.04
+configure [Jenkins-CI](http://jenkins-ci.org/).
 
 The playbook will install Nginx, configure SSL, docker, a local only
-SMTP server and Jenkins plugins.
+SMTP server and Jenkins. It will also install docker maintanance cron
+jobs and Jenkins backup scripts to S3.
 
+Used in combination with [Deis](https://deis.io) for Docker based
+Continuous Delivery of Websites. See also
+[webprod-deis](/mozilla/webprod-deis).
 
 ## Build your own
 
@@ -15,9 +18,6 @@ SMTP server and Jenkins plugins.
    can use a self-signed certificate. Search 'generate self signed SSL
    certificate` on instructions on how to create one.
 
-2. Add SSH keys for Jenkins user in `ssh/` folder. Files `ssh/id_rsa`
-   and `ssh/id_rsa.pub` are needed.
-
 3. Copy `local_variables-dist.yml` to `local_variables.yml` and adjust
    to your preferences.
 
@@ -25,7 +25,7 @@ SMTP server and Jenkins plugins.
 
 ```
 [jenkins]
-ci-1 ansible_ssh_host=127.0.0.1
+127.0.0.1
 ```
 
 5. Run the playbook:
@@ -34,12 +34,6 @@ ci-1 ansible_ssh_host=127.0.0.1
 
 6. Yay!
 
-
-## GitHub hooks and Self-Signed Certificates
-
-If you used a self-signed certificate in step 1, the GitHub WebHooks
-set up by DotCI will not work. You need to edit the hook and disable
-SSL verification.
 
 ### GitHub Webhooks
 
@@ -52,13 +46,30 @@ fail to install their hooks but you can still add them manually.
 
 For GitHub
 
-Payload URL: https://<your_server>/github-webhook/
-Content Type: x-www-form-urlencoded
-Payload: Just the push event
+* Payload URL: `https://<your_server>/github-webhook/`
+* Content Type: `x-www-form-urlencoded`
+* Payload: `Just the push event`
 
 
 For GitHub Pull Request Builder
 
-Payload URL: https://<your_server>/ghprbhook/
-Content Type: x-www-form-urlencoded
-Payload: Pull Request and Issue Comment
+* Payload URL: `https://<your_server>/ghprbhook/`
+* Content Type: `x-www-form-urlencoded`
+* Payload: `Pull Request and Issue Comment`
+
+
+## Jenkins backups
+
+This playbook expects that you use the [ThinBackup](https://wiki.jenkins-ci.org/display/JENKINS/thinBackup) Jenkins plugin and that you save backups in `/var/lib/jenkins/backups`.
+
+## Disaster recovery
+
+In case of a disaster follow these steps:
+
+1. Create a new server based on Ubuntu 14.04
+2. Run this playbook against the server created in step 1
+3. Copy the ThinBackup backups from S3 to the new server under `/var/lib/jenkins/backups`
+4. Go to your new Jenkins management interface -> Plugins -> Install ThinBackup. Restart Jenkins.
+5. Configure ThinBackup to store backups in `/var/lib/jenkins/backups`. Restart Jenkins.
+6. ThinBackup Restore should list all your backups. Restore the latest. This should restore all jenkins jobs and all configuration.
+7. Run jobs to verify that everything is OK. Drink relaxing tea, you earned it.
