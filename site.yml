@@ -185,7 +185,7 @@
 
     - name: Set Jenkins-CI gitconfig
       template:
-        src: templates/gitconfig
+        src: templates/gitconfig.j2
         dest: /var/lib/jenkins/.gitconfig
         group: jenkins
         owner: jenkins
