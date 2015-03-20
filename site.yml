@@ -15,6 +15,7 @@
         - python-virtualenv
         - python-pip
         - sharutils
+        - s3cmd
 
     - name: Install a newer kernel
       apt: name={{ kernel_package }} state=present update_cache=yes cache_valid_time=600
@@ -172,6 +173,18 @@
       cron: name="Remove docker images" minute=0 hour=3
             user="root" job="/usr/local/bin/remove-docker-images.sh 2> /dev/null"
             cron_file=remove_docker_images
+
+    - name: Copy s3cfg configuration (used for backups)
+      template:
+        src=templates/s3cfg.j2
+        dest=/home/ubuntu/.s3cfg
+        mode=0600
+
+    - name: Create jenkins backup job
+      cron: name="Backup Jenkins" minute=0 hour=4
+            user="root" job="s3cmd sync /var/lib/jenkins/backups/*.zip s3://{{ aws_backup_bucket }} --encrypt 2> /dev/null"
+            cron_file=backup_jenkins
+
   handlers:
     - name: Reload Nginx
       service: name=nginx state=reloaded
