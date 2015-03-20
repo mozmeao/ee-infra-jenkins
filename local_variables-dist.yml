@@ -8,3 +8,9 @@ jenkins_smtp_host: localhost
 
 # NewRelic
 newrelic_license_key:
+
+# Backups
+aws_access_key:
+aws_secret_key:
+aws_backup_bucket:
+encrypt_passphrase:
