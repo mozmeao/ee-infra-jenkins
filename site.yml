@@ -15,7 +15,20 @@
         - python-virtualenv
         - python-pip
         - sharutils
-        - linux-image-3.16  # Linux 3.16 behaves much better than the default older version.
+
+    - name: Install a newer kernel
+      apt: name={{ kernel_package }} state=present update_cache=yes cache_valid_time=600
+      register: kernel_installed
+
+    - name: Reboot server
+      shell: reboot
+      when: "kernel_installed|changed"
+
+    - name: Wait for server to restart
+      local_action:
+        module: wait_for host={{ inventory_hostname }} port=22 delay=1
+      sudo: false
+      when: "kernel_installed|changed"
 
     - name: Add NewRelic repository key
       apt_key: url=https://download.newrelic.com/548C16BF.gpg state=present
