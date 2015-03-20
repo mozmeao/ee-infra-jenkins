@@ -2,25 +2,6 @@
 remote_user: ubuntu
 hostname:
 
-jenkins_url:
-
-# GitHub user and access token
-github_username:
-github_access_token:
-
-# First Jenkins user
-jenkins_user:
-jenkins_password:
-
-# IRC Setup
-irc_server:
-irc_ssl:
-irc_port:
-irc_nick:
-irc_nickserv_password:
-irc_channels:
-  # Don't include # in channel name.
-
 # SMTP
 jenkins_email_address:
 jenkins_smtp_host: localhost

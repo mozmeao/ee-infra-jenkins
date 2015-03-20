@@ -146,43 +146,6 @@
         line='JENKINS_ARGS="--webroot=/var/cache/jenkins/war --httpPort=$HTTP_PORT --httpListenAddress=127.0.0.1"'
       notify: Restart Jenkins
 
-    - name: Set Jenkins-CI configuration
-      template:
-        src: templates/jenkins/{{ item }}.j2
-        dest: /var/lib/jenkins/{{ item }}
-        group: jenkins
-        owner: jenkins
-        mode: 0640
-        backup: yes
-      with_items:
-        - config.xml
-        - jenkins.model.JenkinsLocationConfiguration.xml
-        - org.jenkinsci.main.modules.sshd.SSHD.xml
-        - hudson.tasks.Mailer.xml
-        - hudson.plugins.ircbot.IrcPublisher.xml
-        - hudson.plugins.bugzilla.BugzillaProjectProperty.xml
-        - com.cloudbees.jenkins.GitHubPushTrigger.xml
-        - org.jenkinsci.plugins.ghprb.GhprbTrigger.xml
-      notify: Restart Jenkins
-      tags:
-        - jenkins-conf
-        - install-plugins
-
-    - name: Copy Jenkins-CI SSH key
-      copy:
-        src=ssh/{{ item }}
-        dest=/var/lib/jenkins/.ssh/{{ item }}
-        force=yes
-        mode=0600
-        owner=jenkins
-        group=jenkins
-      with_items:
-        - id_rsa
-        - id_rsa.pub
-      tags:
-        - jenkins-conf
-
-
     - name: Set Jenkins-CI gitconfig
       template:
         src: templates/gitconfig.j2
@@ -194,69 +157,6 @@
       tags:
         - jenkins-conf
 
-    # Unset security, so we can install plugins and other stuff
-    # without too much trouble.
-    - name: Set maintenance Jenkins-CI configuration
-      lineinfile:
-        dest=/var/lib/jenkins/config.xml
-        regexp='<useSecurity>true</useSecurity>'
-        line='<useSecurity>false</useSecurity>'
-      notify: Unset maintenance Jenkins-CI configuration
-      tags:
-        - install-plugins
-
-    - name: (Re)-Start Jenkins-CI
-      service: name=jenkins state=restarted
-      tags:
-        - install-plugins
-
-    - name: Wait until Jenkins web API is available
-      shell: curl --head --silent http://localhost:8080/cli/
-      register: result
-      until: result.stdout.find("200 OK") != -1
-      retries: 12
-      delay: 5
-      tags:
-        - install-plugins
-
-    - name: Get Jenkins-CLI
-      get_url:
-        url=http://localhost:8080/jnlpJars/jenkins-cli.jar
-        dest=/home/ubuntu/jenkins-cli.jar
-        mode=0440
-      tags:
-        - install-plugins
-
-    - name: Add first Jenkins-CI user
-      shell:
-        echo "hpsr=new hudson.security.HudsonPrivateSecurityRealm(false); hpsr.createAccount('{{ jenkins_user }}', '{{ jenkins_password }}')" | java -jar jenkins-cli.jar -s http://localhost:8080 groovy =
-
-    - name: Force Jenkins-CI to update plugin list
-      shell:
-        "curl  -L http://updates.jenkins-ci.org/update-center.json | sed '1d;$d' | curl -X POST -H 'Accept: application/json' -d @- http://localhost:8080/updateCenter/byId/default/postBack"
-      tags:
-        - install-plugins
-
-    - name: Install Jenkins Plugins
-      command:
-        java -jar jenkins-cli.jar -s http://localhost:8080 install-plugin {{ item }}
-      with_items:
-        - envinject
-        - conditional-buildstep
-        - embeddable-build-status
-        - git
-        - github
-        - bugzilla
-        - ircbot
-        - ghprb
-        - postbuild-task
-        - periodic-reincarnation
-        - rebuild
-        - parameterized-trigger
-      notify: Restart Jenkins
-      tags:
-        - install-plugins
-
     - name: Start nginx
       service: name=nginx state=started
       tags:
@@ -266,12 +166,6 @@
     - name: Reload Nginx
       service: name=nginx state=reloaded
       sudo_user: root
-
-    - name: Unset maintenance Jenkins-CI configuration
-      lineinfile:
-        dest=/var/lib/jenkins/config.xml
-        regexp='<useSecurity>false</useSecurity>'
-        line='<useSecurity>true</useSecurity>'
 
     - name: Restart Jenkins
       service: name=jenkins state=restarted
