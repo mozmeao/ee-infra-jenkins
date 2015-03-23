@@ -16,6 +16,7 @@
         - python-pip
         - sharutils
         - s3cmd
+        - python-magic  # Make s3cmd happier
 
     - name: Install a newer kernel
       apt: name={{ kernel_package }} state=present update_cache=yes cache_valid_time=600
@@ -177,12 +178,12 @@
     - name: Copy s3cfg configuration (used for backups)
       template:
         src=templates/s3cfg.j2
-        dest=/home/ubuntu/.s3cfg
+        dest="/home/{{ remote_user }}/.s3cfg"
         mode=0600
 
     - name: Create jenkins backup job
       cron: name="Backup Jenkins" minute=0 hour=4
-            user="root" job="s3cmd sync /var/lib/jenkins/backups/*.zip s3://{{ aws_backup_bucket }} --encrypt 2> /dev/null"
+            user="root" job="s3cmd -c /home/{{ remote_user }}/.s3cfg put -r /var/lib/jenkins/backups/*.zip s3://{{ aws_backup_bucket }} --encrypt 2> /dev/null"
             cron_file=backup_jenkins
 
   handlers:
