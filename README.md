@@ -9,7 +9,7 @@ jobs and Jenkins backup scripts to S3.
 
 Used in combination with [Deis](https://deis.io) for Docker based
 Continuous Delivery of Websites. See also
-[webprod-deis](/mozilla/webprod-deis).
+[webprod-deis](http://www.github.com/mozilla/webprod-deis).
 
 ## Build your own
 
