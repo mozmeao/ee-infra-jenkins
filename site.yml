@@ -119,8 +119,10 @@
         state=present
         update_cache=yes
 
-    - name: Install Docker
-      apt: name=lxc-docker state=present update_cache=yes cache_valid_time=600
+    # Version 1.6 changed image format and doesn't work with Deis
+    # See https://github.com/deis/deis/issues/3550
+    - name: Install Docker 1.5
+      apt: name=lxc-docker-1.5.0 state=present update_cache=yes cache_valid_time=600
 
     - name: Add Jenkins-CI Repository Key
       apt_key: url=http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key state=present
