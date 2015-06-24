@@ -188,6 +188,14 @@
             user="root" job="s3cmd -c /home/{{ remote_user }}/.s3cfg put -r /var/lib/jenkins/backups/*.zip s3://{{ aws_backup_bucket }} --encrypt 2> /dev/null"
             cron_file=backup_jenkins
 
+    - name: Copy docker-squash
+      unarchive:
+        src=docker-squash/docker-squash-linux-amd64-v0.1.0.tar.gz
+        dest=/usr/local/bin/
+
+    - name: Allow docker-squash for user jenkins
+      lineinfile: 'dest=/etc/sudoers line="jenkins  ALL = NOPASSWD:  /usr/local/bin/docker-squash"'
+
   handlers:
     - name: Reload Nginx
       service: name=nginx state=reloaded
