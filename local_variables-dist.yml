@@ -14,3 +14,6 @@ aws_access_key:
 aws_secret_key:
 aws_backup_bucket:
 encrypt_passphrase:
+
+# Docker
+kernel_package: linux-image-3.19.0-18-generic
