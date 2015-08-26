@@ -17,6 +17,8 @@
         - sharutils
         - s3cmd
         - python-magic  # Make s3cmd happier
+        - mosh
+        - tmux
 
     - name: Install a newer kernel
       apt: name={{ kernel_package }} state=present update_cache=yes cache_valid_time=600
