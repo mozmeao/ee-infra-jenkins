@@ -12,7 +12,8 @@ newrelic_license_key:
 # Backups
 aws_access_key:
 aws_secret_key:
-aws_backup_bucket:
+# Make sure to end with a /
+aws_backup_bucket: ee-jenkins/backup/
 encrypt_passphrase:
 
 # Docker
