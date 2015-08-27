@@ -73,3 +73,5 @@ In case of a disaster follow these steps:
 5. Configure ThinBackup to store backups in `/var/lib/jenkins/backups`. Restart Jenkins.
 6. ThinBackup Restore should list all your backups. Restore the latest. This should restore all jenkins jobs and all configuration.
 7. Run jobs to verify that everything is OK. Drink relaxing tea, you earned it.
+
+Note that environment passwords used in jobs will not be restored and you will have to do this manually.
