@@ -16,4 +16,4 @@ aws_backup_bucket:
 encrypt_passphrase:
 
 # Docker
-kernel_package: linux-image-3.19.0-18-generic
+kernel: 3.13.0-24-generic

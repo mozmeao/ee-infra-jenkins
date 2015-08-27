@@ -26,7 +26,10 @@
         - subversion
 
     - name: Install a newer kernel
-      apt: name={{ kernel_package }} state=present update_cache=yes cache_valid_time=600
+      apt: name=linux-image-{{ kernel }} state=present update_cache=yes cache_valid_time=600
+      with_items:
+        - "{{ kernel }}"
+        - "linux-image-extra-{{ kernel }}"
       register: kernel_installed
 
     - name: Reboot server
@@ -131,6 +134,13 @@
     - name: Install Docker 1.5
       apt: name=lxc-docker-1.5.0 state=present update_cache=yes cache_valid_time=600
 
+    - name: Set Docker to use AUFS
+      lineinfile:
+        dest=/etc/default/docker
+        regexp=^DOCKER_OPTS=
+        line='DOCKER_OPTS="-s aufs"'
+      notify: Restart Docker
+
     - name: Add Jenkins-CI Repository Key
       apt_key: url=http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key state=present
 
@@ -218,6 +228,10 @@
 
     - name: Restart newrelic
       service: name=newrelic-sysmond state=restarted
+      sudo_user: root
+
+    - name: Restart Docker
+      service: name=docker state=restarted
       sudo_user: root
 
   vars_files:
