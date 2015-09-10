@@ -213,6 +213,14 @@
     - name: Allow docker-squash for user jenkins
       lineinfile: 'dest=/etc/sudoers line="jenkins  ALL = NOPASSWD:  /usr/local/bin/docker-squash"'
 
+    # Add Maxmind repo and packages
+    # https://github.com/maxmind/geoipupdate
+    - name: Add MaxMind repository
+      apt_repository: repo='ppa:maxmind/ppa'
+
+    - name: Download MaxMind geoipupdate
+      apt: name='geoipupdate' update_cache=yes
+
   handlers:
     - name: Reload Nginx
       service: name=nginx state=reloaded
