@@ -1,12 +1,13 @@
 #!/bin/bash
 # Clean up docker reserved space due to bug https://github.com/docker/docker/issues/3182
 
-set -xe
+set -x
 
 # Delete all containers
-docker rm $(docker ps -a -q)
+docker rm $(docker ps --filter=[status=exited] -a -q)
+
 # Delete all images
-docker rmi -f $(docker images -q)
+docker rmi $(docker images -q -a)
 
 service docker stop
 service docker start
