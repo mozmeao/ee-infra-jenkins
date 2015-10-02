@@ -24,6 +24,7 @@
         - libffi-dev
         - libssl-dev
         - subversion
+        - supervisor
 
     - name: Install a newer kernel
       apt: name=linux-image-{{ kernel }} state=present update_cache=yes cache_valid_time=600
@@ -138,7 +139,7 @@
       lineinfile:
         dest=/etc/default/docker
         regexp=^DOCKER_OPTS=
-        line='DOCKER_OPTS="-s aufs"'
+        line='DOCKER_OPTS="-s aufs  --insecure-registry=http://localhost:5000,http://localhost:5001"'
       notify: Restart Docker
 
     - name: Add Jenkins-CI Repository Key
@@ -221,6 +222,20 @@
     - name: Download MaxMind geoipupdate
       apt: name='geoipupdate' update_cache=yes
 
+    - name: Set supervisor configuration
+      template:
+        src: "templates/{{ item }}"
+        dest: "/etc/supervisor/conf.d/{{ item }}"
+        group: root
+        owner: root
+        mode: 0600
+      with_items:
+        - docker-registry-eu-west.conf
+        - docker-registry-us-west.conf
+      notify: Restart supervisor
+      tags:
+        - supervisor
+
   handlers:
     - name: Reload Nginx
       service: name=nginx state=reloaded
@@ -240,6 +255,10 @@
 
     - name: Restart Docker
       service: name=docker state=restarted
+      sudo_user: root
+
+    - name: Restart supervisor
+      service: name=supervisor state=restarted
       sudo_user: root
 
   vars_files:
