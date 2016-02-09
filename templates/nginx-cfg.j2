@@ -22,4 +22,56 @@ server {
     proxy_redirect http:// https://;
     proxy_pass              http://jenkins;
   }
+
+  # Restrict access to the following paths to localhost (SSH tunneled users)
+  location /api {
+    deny    all;
+    allow   localhost;
+  }
+
+  location /restart {
+    deny    all;
+    allow   localhost;
+  }
+
+  location /quietDown {
+    deny    all;
+    allow   localhost;
+  }
+
+  location /user/jenkins {
+    deny    all;
+    allow   localhost;
+  }
+
+  location /jnlpJars {
+    deny    all;
+    allow   localhost;
+  }
+
+  location /script {
+    deny    all;
+    allow   localhost;
+  }
+
+  location /asynchPeople {
+    deny    all;
+    allow   localhost;
+  }
+
+  location /credential-store {
+    deny    all;
+    allow   localhost;
+  }
+
+  location /systemInfo {
+    deny    all;
+    allow   localhost;
+  }
+
+  location /view/All/newJob {
+    deny    all;
+    allow   localhost;
+  }
+
 }
