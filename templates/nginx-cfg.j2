@@ -24,7 +24,7 @@ server {
   }
 
   # Restrict the following paths to localhost (SSH tunneled users only)
-  location ~ /(api|restart|quietDown|user/jenkins|jnlpJars|script|asynchPeople|credential-store|systemInfo|view/All/newJob|) {
+  location ~ /(api|restart|quietDown|user/jenkins|jnlpJars|script|asynchPeople|credential-store|systemInfo|view/All/newJob) {
     deny    all;
     allow   localhost;
   }
