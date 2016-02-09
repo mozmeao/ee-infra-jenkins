@@ -23,16 +23,14 @@ server {
     proxy_pass              http://jenkins;
   }
 
-  # Restrict the following paths to localhost (SSH tunneled users only)
+  # Restrict access to the following paths
   location ~ /(api|restart|quietDown|user/jenkins|jnlpJars|script|asynchPeople|credential-store|systemInfo|view/All/newJob) {
     deny    all;
-    allow   localhost;
   }
 
-  # Restrict injectedEnvVars paths to localhost (SSH tunneled users only)
+  # Restrict access to injectedEnvVars paths
   location ~* ^.+/injectedEnvVars/$ {
     deny    all;
-    allow   localhost;
   }
 
 }
