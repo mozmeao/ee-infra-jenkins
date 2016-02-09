@@ -22,4 +22,15 @@ server {
     proxy_redirect http:// https://;
     proxy_pass              http://jenkins;
   }
+
+  # Restrict access to the following paths
+  location ~ /(api|restart|quietDown|user/jenkins|jnlpJars|script|asynchPeople|credential-store|systemInfo|view/All/newJob) {
+    deny    all;
+  }
+
+  # Restrict access to injectedEnvVars paths
+  location ~* ^.+/injectedEnvVars/$ {
+    deny    all;
+  }
+
 }
