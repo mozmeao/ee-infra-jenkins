@@ -24,7 +24,7 @@ server {
   }
 
   # Restrict access to the following paths
-  location ^~ /(api|restart|quietDown|user/jenkins|jnlpJars|script|asynchPeople|credential-store|systemInfo|view/All/newJob) {
+  location ~ /(api|restart|quietDown|user/jenkins|jnlpJars|script|asynchPeople|credential-store|systemInfo|view/All/newJob) {
     deny    all;
   }
 
