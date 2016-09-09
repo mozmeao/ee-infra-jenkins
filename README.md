@@ -1,13 +1,13 @@
 # Jenkins-CI
 
-This is a [ansible](http://ansible.com/) playbook to install and
+This is an [ansible](http://ansible.com/) playbook to install and
 configure [Jenkins-CI](http://jenkins-ci.org/).
 
-The playbook will install Nginx, configure SSL, docker, a local only
-SMTP server and Jenkins. It will also install docker maintanance cron
-jobs and Jenkins backup scripts to S3.
+The playbook will install NGINX, configure SSL, Docker, a local-only
+SMTP server and Jenkins. It will also install Docker-maintenance cron
+jobs and Jenkins-backup scripts to S3.
 
-Used in combination with [Deis](https://deis.io) for Docker based
+Used in combination with [Deis](https://deis.io) for Docker-based
 Continuous Delivery of Websites. See also
 [webprod-deis](http://www.github.com/mozilla/webprod-deis).
 
@@ -41,8 +41,8 @@ This playbook installs two GitHub plugins,
 [GitHub](https://wiki.jenkins-ci.org/display/JENKINS/Github+Plugin)
 and
 [GitHub Pull Request Builder](https://wiki.jenkins-ci.org/display/JENKINS/Github+pull+request+builder+plugin). Read
-the instructions on how to enable these. In some cases the plugins
-fail to install their hooks but you can still add them manually.
+the instructions on how to enable these. In some cases, the plugins
+fail to install their hooks, but you can still add them manually.
 
 For GitHub
 
@@ -66,12 +66,12 @@ This playbook expects that you use the [ThinBackup](https://wiki.jenkins-ci.org/
 
 In case of a disaster follow these steps:
 
-1. Create a new server based on Ubuntu 14.04
-2. Run this playbook against the server created in step 1
-3. Copy the ThinBackup backups from S3 to the new server under `/var/lib/jenkins/backups`
+1. Create a new server based on Ubuntu 14.04.
+2. Run this playbook against the server created in step 1.
+3. Copy the ThinBackup backups from S3 to the new server under `/var/lib/jenkins/backups`.
 4. Go to your new Jenkins management interface -> Plugins -> Install ThinBackup. Restart Jenkins.
 5. Configure ThinBackup to store backups in `/var/lib/jenkins/backups`. Restart Jenkins.
-6. ThinBackup Restore should list all your backups. Restore the latest. This should restore all jenkins jobs and all configuration.
+6. ThinBackup Restore should list all your backups. Restore the latest. This should restore all Jenkins jobs and all configurations.
 7. Run jobs to verify that everything is OK. Drink relaxing tea, you earned it.
 
 Note that environment passwords used in jobs will not be restored and you will have to do this manually.
