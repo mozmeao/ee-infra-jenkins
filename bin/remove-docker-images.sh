@@ -1,14 +1,20 @@
 #!/bin/bash
-# Clean up docker reserved space due to bug https://github.com/docker/docker/issues/3182
-
+# Cleanup unused docker images
 set -x
 
-# Delete all containers
-docker rm $(docker ps --filter=[status=exited] -a -q)
 
-# Delete all images
-docker rmi $(docker images -q -a)
+CONTAINERS=$(docker ps -a -q -f status=exited)
+if [[ ! -z $CONTAINERS ]];
+then
+    docker rm -v $CONTAINERS;
+fi;
 
-service docker stop
-service docker start
-service jenkins restart
+IMAGES=$(docker images -q)
+
+if [[ ! -z $IMAGES ]];
+then
+    docker rmi $IMAGES;
+fi;
+
+curl -s {{ docker_images_cleanup_dms}}
+echo "Completed docker image cleanup."

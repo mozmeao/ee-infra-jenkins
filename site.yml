@@ -183,7 +183,7 @@
         - install-plugins
 
     - name: Copy 'remove-docker-image' script
-      copy:
+      template:
         src: bin/remove-docker-images.sh
         dest: /usr/local/bin/remove-docker-images.sh
         mode: 0755
