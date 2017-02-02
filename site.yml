@@ -25,6 +25,8 @@
         - libssl-dev
         - subversion
         - supervisor
+        - apt-transport-https
+        - ca-certificates
 
     - name: Install a newer kernel
       apt: name=linux-image-{{ kernel }} state=present update_cache=yes cache_valid_time=600
