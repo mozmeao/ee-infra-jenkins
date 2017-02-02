@@ -172,7 +172,7 @@
       lineinfile:
         dest=/etc/default/jenkins
         regexp=^JENKINS_ARGS=
-        line='JENKINS_ARGS="--webroot=/var/cache/jenkins/war --httpPort=$HTTP_PORT --httpListenAddress=127.0.0.1"'
+        line='JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT --httpListenAddress=127.0.0.1"'
       notify: Restart Jenkins
 
     - name: Set Jenkins-CI gitconfig
