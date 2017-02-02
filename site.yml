@@ -191,13 +191,13 @@
       tags:
         - install-plugins
 
-    - name: Copy 'remove-docker-image' script
+    - name: Copy docker-cleanup script
       template:
         src: bin/remove-docker-images.sh
         dest: /usr/local/bin/remove-docker-images.sh
         mode: 0755
 
-    - name: Create cron job for 'remove-docker-images'
+    - name: Create cron job for docker-cleanup script
       cron: name="Remove docker images" minute=0 hour=3 weekday=0
             user="root" job="/usr/local/bin/remove-docker-images.sh 2> /dev/null"
             cron_file=remove_docker_images
