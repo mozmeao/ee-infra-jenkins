@@ -75,6 +75,39 @@
       tags:
         - newrelic
 
+    - name: Add Datadog repository key
+      apt_key:
+        keyserver=keyserver.ubuntu.com
+        id=C7A7DA52
+        state=present
+      tags:
+        - datadog
+
+    - name: Add Datadog repository
+      apt_repository:
+        repo='deb https://apt.datadoghq.com/ stable main'
+        state=present
+        update_cache=yes
+      tags:
+        - datadog
+
+    - name: Install Datadog
+      apt: name=datadog-agent state=present update_cache=yes cache_valid_time=300
+      tags:
+        - datadog
+
+    - name: Copy Datadog Configuration
+      template:
+        src: templates/datadog.cfg.j2
+        dest: /etc/dd-agent/datadog.conf
+        group: root
+        owner: dd-agent
+        mode: 0640
+      notify:
+        - Restart datadog
+      tags:
+        - datadog
+
     - name: Install mailutils for email sending
       apt: name=mailutils state=present update_cache=yes cache_valid_time=600
 
@@ -244,6 +277,10 @@
 
     - name: Restart newrelic
       service: name=newrelic-sysmond state=restarted
+      become_user: root
+
+    - name: Restart datadog
+      service: name=datadog-agent state=restarted
       become_user: root
 
     - name: Restart Docker
