@@ -1,7 +1,7 @@
 ---
 - hosts: jenkins
   remote_user: "{{ remote_user }}"
-  sudo: True
+  become: True
   tasks:
     - name: Set hostname
       hostname: name={{ hostname }}
@@ -40,7 +40,7 @@
     - name: Wait for server to restart
       local_action:
         module: wait_for host={{ inventory_hostname }} port=22 delay=1
-      sudo: false
+      become: false
       when: "kernel_installed|changed"
 
     - name: Add NewRelic repository key
@@ -229,27 +229,27 @@
   handlers:
     - name: Reload Nginx
       service: name=nginx state=reloaded
-      sudo_user: root
+      become_user: root
 
     - name: Restart Jenkins
       service: name=jenkins state=restarted
-      sudo_user: root
+      become_user: root
 
     - name: Restart Postfix
       service: name=postfix state=restarted
-      sudo_user: root
+      become_user: root
 
     - name: Restart newrelic
       service: name=newrelic-sysmond state=restarted
-      sudo_user: root
+      become_user: root
 
     - name: Restart Docker
       service: name=docker state=restarted
-      sudo_user: root
+      become_user: root
 
     - name: Restart supervisor
       service: name=supervisor state=restarted
-      sudo_user: root
+      become_user: root
 
   vars_files:
     - local_variables.yml
