@@ -1,7 +1,7 @@
 ---
 - hosts: jenkins
   remote_user: "{{ remote_user }}"
-  sudo: True
+  become: True
   tasks:
     - name: Set hostname
       hostname: name={{ hostname }}
@@ -25,6 +25,8 @@
         - libssl-dev
         - subversion
         - supervisor
+        - apt-transport-https
+        - ca-certificates
 
     - name: Install a newer kernel
       apt: name=linux-image-{{ kernel }} state=present update_cache=yes cache_valid_time=600
@@ -40,7 +42,7 @@
     - name: Wait for server to restart
       local_action:
         module: wait_for host={{ inventory_hostname }} port=22 delay=1
-      sudo: false
+      become: false
       when: "kernel_installed|changed"
 
     - name: Add NewRelic repository key
@@ -72,6 +74,39 @@
         - Restart newrelic
       tags:
         - newrelic
+
+    - name: Add Datadog repository key
+      apt_key:
+        keyserver=keyserver.ubuntu.com
+        id=C7A7DA52
+        state=present
+      tags:
+        - datadog
+
+    - name: Add Datadog repository
+      apt_repository:
+        repo='deb https://apt.datadoghq.com/ stable main'
+        state=present
+        update_cache=yes
+      tags:
+        - datadog
+
+    - name: Install Datadog
+      apt: name=datadog-agent state=present update_cache=yes cache_valid_time=300
+      tags:
+        - datadog
+
+    - name: Copy Datadog Configuration
+      template:
+        src: templates/datadog.cfg.j2
+        dest: /etc/dd-agent/datadog.conf
+        group: root
+        owner: dd-agent
+        mode: 0640
+      notify:
+        - Restart datadog
+      tags:
+        - datadog
 
     - name: Install mailutils for email sending
       apt: name=mailutils state=present update_cache=yes cache_valid_time=600
@@ -121,17 +156,22 @@
     - name: Add Docker Repository Key
       apt_key:
         state=present
-        keyserver=keyserver.ubuntu.com
-        id=36A1D7869245C8950F966E92D8576A8BA88D21E9
+        url=https://yum.dockerproject.org/gpg
+      tags:
+        - docker
 
     - name: Add Docker Repository
       apt_repository:
-        repo='deb https://get.docker.io/ubuntu docker main'
+        repo='deb https://apt.dockerproject.org/repo/ ubuntu-trusty main'
         state=present
         update_cache=yes
+      tags:
+        - docker
 
     - name: Install Docker
-      apt: name=lxc-docker state=present update_cache=yes cache_valid_time=600
+      apt: name=docker-engine=1.13.* state=present update_cache=yes cache_valid_time=600
+      tags:
+        - docker
 
     - name: Set Docker to use AUFS
       lineinfile:
@@ -139,6 +179,8 @@
         regexp=^DOCKER_OPTS=
         line='DOCKER_OPTS="-s aufs  --insecure-registry=http://localhost:5000,http://localhost:5001"'
       notify: Restart Docker
+      tags:
+        - docker
 
     - name: Add Jenkins-CI Repository Key
       apt_key: url=http://pkg.jenkins-ci.org/debian/jenkins-ci.org.key state=present
@@ -163,7 +205,7 @@
       lineinfile:
         dest=/etc/default/jenkins
         regexp=^JENKINS_ARGS=
-        line='JENKINS_ARGS="--webroot=/var/cache/jenkins/war --httpPort=$HTTP_PORT --httpListenAddress=127.0.0.1"'
+        line='JENKINS_ARGS="--webroot=/var/cache/$NAME/war --httpPort=$HTTP_PORT --httpListenAddress=127.0.0.1"'
       notify: Restart Jenkins
 
     - name: Set Jenkins-CI gitconfig
@@ -182,13 +224,13 @@
       tags:
         - install-plugins
 
-    - name: Copy 'remove-docker-image' script
+    - name: Copy docker-cleanup script
       template:
         src: bin/remove-docker-images.sh
         dest: /usr/local/bin/remove-docker-images.sh
         mode: 0755
 
-    - name: Create cron job for 'remove-docker-images'
+    - name: Create cron job for docker-cleanup script
       cron: name="Remove docker images" minute=0 hour=3 weekday=0
             user="root" job="/usr/local/bin/remove-docker-images.sh 2> /dev/null"
             cron_file=remove_docker_images
@@ -201,24 +243,10 @@
 
     - name: Create jenkins backup job
       cron: name="Backup Jenkins" minute=0 hour=4
-            user="root" job="s3cmd -c /home/{{ remote_user }}/.s3cfg put -r /var/lib/jenkins/backups/*.zip s3://{{ aws_backup_bucket }} --encrypt 2> /dev/null"
+            user="root"
+            job="(s3cmd -c /home/{{ remote_user }}/.s3cfg put -r /var/lib/jenkins/backups/*.zip s3://{{ aws_backup_bucket }} --encrypt 2> /dev/null) && curl -s  {{ jenkins_backup_dms }}"
             cron_file=backup_jenkins
 
-    - name: Copy docker-squash
-      unarchive:
-        src=docker-squash/docker-squash-linux-amd64-v0.1.0.tar.gz
-        dest=/usr/local/bin/
-
-    - name: Allow docker-squash for user jenkins
-      lineinfile: 'dest=/etc/sudoers line="jenkins  ALL = NOPASSWD:  /usr/local/bin/docker-squash"'
-
-    # Add Maxmind repo and packages
-    # https://github.com/maxmind/geoipupdate
-    - name: Add MaxMind repository
-      apt_repository: repo='ppa:maxmind/ppa'
-
-    - name: Download MaxMind geoipupdate
-      apt: name='geoipupdate' update_cache=yes
 
     - name: Set supervisor configuration
       template:
@@ -237,27 +265,31 @@
   handlers:
     - name: Reload Nginx
       service: name=nginx state=reloaded
-      sudo_user: root
+      become_user: root
 
     - name: Restart Jenkins
       service: name=jenkins state=restarted
-      sudo_user: root
+      become_user: root
 
     - name: Restart Postfix
       service: name=postfix state=restarted
-      sudo_user: root
+      become_user: root
 
     - name: Restart newrelic
       service: name=newrelic-sysmond state=restarted
-      sudo_user: root
+      become_user: root
+
+    - name: Restart datadog
+      service: name=datadog-agent state=restarted
+      become_user: root
 
     - name: Restart Docker
       service: name=docker state=restarted
-      sudo_user: root
+      become_user: root
 
     - name: Restart supervisor
       service: name=supervisor state=restarted
-      sudo_user: root
+      become_user: root
 
   vars_files:
     - local_variables.yml
