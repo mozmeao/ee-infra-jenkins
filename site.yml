@@ -235,7 +235,7 @@
 
     - name: Copy docker-cleanup script
       template:
-        src: bin/remove-docker-images.sh
+        src: bin/docker-cleanup.sh
         dest: /usr/local/bin/remove-docker-images.sh
         mode: 0755
 
