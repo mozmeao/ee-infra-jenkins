@@ -1,0 +1,14 @@
+---
+# If you want to create a user uncomment here
+#create_users: true
+
+# Example on how to add a user
+# if user has a github account
+# account_names:
+#   - { user: 'user1', key: 'https://github.com/user1.keys' }
+
+# Example on how to add a user
+# if there isn't a github account or if you just want to add
+# your own key
+# account_names:
+#   - { user: 'user2', key: 'sshr-rsa blhalblablabahas== user1@host' }
