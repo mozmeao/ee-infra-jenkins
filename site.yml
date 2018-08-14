@@ -27,6 +27,10 @@
         - supervisor
         - apt-transport-https
         - ca-certificates
+        - openjdk-8-jre
+        - openjdk-8-jdk
+        - openjdk-8-jdk-headless
+        - apache2-utils
 
     - name: Install a newer kernel
       apt: name=linux-image-{{ kernel }} state=present update_cache=yes cache_valid_time=600
@@ -162,7 +166,7 @@
 
     - name: Add Docker Repository
       apt_repository:
-        repo='deb https://apt.dockerproject.org/repo/ ubuntu-trusty main'
+        repo='deb https://apt.dockerproject.org/repo/ {{ ansible_distribution|lower }}-{{ ansible_distribution_release|lower }} main'
         state=present
         update_cache=yes
       tags:

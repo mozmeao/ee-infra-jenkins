@@ -66,7 +66,7 @@ This playbook expects that you use the [ThinBackup](https://wiki.jenkins-ci.org/
 
 In case of a disaster follow these steps:
 
-1. Create a new server based on Ubuntu 14.04.
+1. Create a new server based on Ubuntu 16.04.
 2. Run this playbook against the server created in step 1.
 3. Copy the ThinBackup backups from S3 to the new server under `/var/lib/jenkins/backups`.
 4. Go to your new Jenkins management interface -> Plugins -> Install ThinBackup. Restart Jenkins.
