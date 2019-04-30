@@ -32,23 +32,6 @@
         - openjdk-8-jdk-headless
         - apache2-utils
 
-    - name: Install a newer kernel
-      apt: name=linux-image-{{ kernel }} state=present update_cache=yes cache_valid_time=600
-      with_items:
-        - "{{ kernel }}"
-        - "linux-image-extra-{{ kernel }}"
-      register: kernel_installed
-
-    - name: Reboot server
-      shell: reboot
-      when: "kernel_installed|changed"
-
-    - name: Wait for server to restart
-      local_action:
-        module: wait_for host={{ inventory_hostname }} port=22 delay=1
-      become: false
-      when: "kernel_installed|changed"
-
     - name: Add NewRelic repository key
       apt_key: url=https://download.newrelic.com/548C16BF.gpg state=present
       tags:
@@ -160,20 +143,20 @@
     - name: Add Docker Repository Key
       apt_key:
         state=present
-        url=https://yum.dockerproject.org/gpg
+        url=https://download.docker.com/linux/ubuntu/gpg
       tags:
         - docker
 
     - name: Add Docker Repository
       apt_repository:
-        repo='deb https://apt.dockerproject.org/repo/ {{ ansible_distribution|lower }}-{{ ansible_distribution_release|lower }} main'
+        repo='deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release|lower }} stable'
         state=present
         update_cache=yes
       tags:
         - docker
 
     - name: Install Docker
-      apt: name=docker-engine=1.13.* state=present update_cache=yes cache_valid_time=600
+      apt: name=docker-ce=18.* state=present update_cache=yes cache_valid_time=600
       tags:
         - docker
 
