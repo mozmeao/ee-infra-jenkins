@@ -1,6 +1,6 @@
 ---
 - hosts: jenkins
-  remote_user: "{{ remote_user }}"
+  remote_user: "{{ remote_user | default('ubuntu') }}"
   become: True
   tasks:
     - name: Set hostname
@@ -275,6 +275,12 @@
       tags:
         - supervisor
 
+  roles:
+    - role: users
+      tags:
+        - users
+      when: create_users
+
   handlers:
     - name: Reload Nginx
       service: name=nginx state=reloaded
@@ -305,4 +311,5 @@
       become_user: root
 
   vars_files:
+    - './vars/main.yml'
     - local_variables.yml
