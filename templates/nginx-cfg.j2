@@ -32,5 +32,32 @@ server {
   location ~* ^.+/injectedEnvVars/$ {
     deny    all;
   }
+}
+
+server {
+  # TLS terminated at ELB
+  listen 4443;
+
+  location / {
+    proxy_set_header        Host $host;
+    proxy_set_header        X-Real-IP $remote_addr;
+    proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header        X-Forwarded-Proto $scheme;
+    proxy_set_header        Authorization "";
+    proxy_pass              http://jenkins;
+    auth_basic              "Restricted";
+    auth_basic_user_file    /etc/nginx/htpasswd;
+
+  }
+
+  # Restrict access to the following paths
+  location ~* ^/(api|cli|restart|quietDown|user/jenkins|jnlpJars|script|asynchPeople|credential-store|systemInfo|view/All/newJob) {
+    deny    all;
+  }
+
+  # Restrict access to injectedEnvVars paths
+  location ~* ^.+/injectedEnvVars/$ {
+    deny    all;
+  }
 
 }
